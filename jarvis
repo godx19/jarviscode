@@ -1,0 +1,101 @@
+import pyttsx3
+import speech_recognition as sr
+import webbrowser
+
+# Initialize the text-to-speech engine
+engine = pyttsx3.init()
+
+def speak(text, silent_mode=False):
+    if not silent_mode and text:
+        engine.say(text)
+        engine.runAndWait()
+
+def listen():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = recognizer.listen(source)
+        try:
+            text = recognizer.recognize_google(audio)
+            return text.lower()
+        except sr.UnknownValueError:
+            raise
+        except sr.RequestError:
+            raise
+
+def open_website(command, silent_mode=False):
+    # Check for common website commands
+    if "open youtube" in command:
+        if not silent_mode:
+            speak("Opening YouTube")
+        webbrowser.open("http://www.youtube.com")
+    elif "open google" in command:
+        if not silent_mode:
+            speak("Opening Google")
+        webbrowser.open("http://www.google.com")
+    elif "open facebook" in command:
+        if not silent_mode:
+            speak("Opening Facebook")
+        webbrowser.open("http://www.facebook.com")
+    elif "i work on my project" in command or "open github" in command:
+        if not silent_mode:
+            speak("Opening GitHub")
+        webbrowser.open("http://www.github.com")
+    else:
+        # Attempt to open a website based on the command
+        words = command.split()
+        if "open" in words:
+            site_index = words.index("open") + 1
+            if site_index < len(words):
+                site = words[site_index]
+                url = f"http://www.{site}.com"
+                if not silent_mode:
+                    speak(f"Opening {site}")
+                webbrowser.open(url)
+            else:
+                if not silent_mode:
+                    speak("Please specify a website to open.")
+
+def main():
+    silent_mode = False
+    speak("Hello! How can I assist you today?")
+    while True:
+        try:
+            command = listen()
+            print(f"You said: {command}")
+            if "stop" in command:
+                if not silent_mode:
+                    speak("Goodbye!")
+                break
+            elif "hello" in command:
+                if not silent_mode:
+                    speak("hey how are you")
+            elif "your name" in command:
+                if not silent_mode:
+                    speak("I am jarvis.")
+            elif "silent mode" in command:
+                silent_mode = True
+                print("Silent mode enabled.")
+                speak("Silent mode enabled.", silent_mode=False)
+            elif "normal mode" in command:
+                silent_mode = False
+                print("Normal mode enabled.")
+                speak("Normal mode enabled.")
+            elif "open" in command or "i work on my project" in command:
+                open_website(command, silent_mode)
+            else:
+                if not silent_mode:
+                    speak("I didn't catch that. Can you repeat?")
+        except KeyboardInterrupt:
+            if not silent_mode:
+                speak("Goodbye!")
+            break
+        except sr.UnknownValueError:
+            if not silent_mode:
+                speak("Sorry, I did not understand that.")
+        except sr.RequestError:
+            if not silent_mode:
+                speak("Sorry, there was an error with the speech service.")
+
+if __name__ == "__main__":
+    main()
